@@ -1,0 +1,102 @@
+#+TITLE: Intro to Parallel Computing
+#+AUTHOR: Bryce Mazurowski
+#+EMAIL: brycepm2@gmail.com
+
+
+Notes from NCSA workshop on parallel computing
+* CampusCluster
+to login
+#+begin_src shell
+ssh -l brycepm2 cc-login1.campuscluster.illinois.edu
+#+end_src
+while on vpn
+
+* Notes
+** Intro
+- Clock speed limits processing power of cpu
+  - Limitations result from power dissipation
+  - How to keep cpus cold so they don't melt
+- For more processing power, make more cores in cpu
+** Types of parallel 
+*** Task
+- multiple tasks on the same data
+*** Data
+- One task on a bunch of data
+** Jargon
+- PeakPerformance - max speed
+- ClockRate - measurement of processor speed
+- ComputerCycle - shortest time that unit of work can be performed
+- Instructions/second - How quickly cpu can issue instructions
+- FLOPS - floating point operation
+- Speedup - measure of benefit of parallelism, how program scales with processors
+- benchmark - used to rate and compare performance of parallel
+  computers
+** ProcessingUnits
+Can go parallel in defferent processing units
+*** CPUs
+- moderate number of very powerful processors
+*** GPUs
+- large number of tiny processors that are not as capable
+  
+** Memory
+*** DistMem
+- each cpu has its own memory
+*** SharedMem
+- all cpus share mem
+*** DistSharedMem
+- memory is separated physically, but connected virtually
+** FlowOfControl
+*** Flynn's taxonomy
+how streams of instructions interact with streams of data
+SISD - not parallel
+SIMD - parallelizable and scalable
+MISD - parallelizable, can scale, not common
+MIMD - highly parallelizable, scales either way
+** InterconnectionNetworks
+- How nodes are connected on an HPC
+
+** Processes, Threads, and More
+- thread: smallest sequence of instruction OS scheduler can manage
+- Process: composed of threads. Memoryspace allocated when program is
+  loaded from disk
+** Frameworks
+- OpenMP: parallel at an intranode level cpus
+- OpenACC: parallel at an intranode level gpus
+- MPI: parallel at an internode level
+
+* Exercises
+** Why OpenMP
+*** Pros
+- API that supports multiPlatform shared mem processing
+- simple, robust, mature
+- incremental parallelism
+- no message passing required
+- sizeable speedup with little work
+*** Cons
+- Not fully scalable alone
+- No requirement to write applications with parallel in mind
+- Performance limited by sequential blocks
+** ParallelRegions
+- Create regions that can be executed by different threads
+- Thread0: main thread
+- Parallel region creates team of threads and distribute instructions
+  to them
+- At end of parallel region, each thread in the team waits for all to
+  finish and the team of threads are destroyed
+** Stats
+Task parallelism: Perform a bunch of tasks on one set of data
+DataConcurrency: multiple threads making changes to collection of data
+at once
+speedup_N: timeSerial/timeNThreads
+** Saxpy
+Data Parallelism: same task, but slice up the data set
+OpenMP cuts up data on its own in omp for
+4 threads will automatically cut up vector into 4 chunks
+Race condition: bad
+linear scaling (in logLog)
+Scaling starts to saturate after 8 threads
+Always good to compare with ideal scaling curve t1/tN = N
+Processes do not scale ideally because of parallel overhead
+Creating and distributing workflows causes trouble
+NonUnifiedMemoryAccess: also slows things down. CPUs are farther from
+memory we operate on. 
