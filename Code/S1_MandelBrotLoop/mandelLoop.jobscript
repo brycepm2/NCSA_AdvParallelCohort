@@ -1,0 +1,24 @@
+#!/bin/bash
+#SBATCH --job-name="mandelLoop"
+#SBATCH --output="mandelLoop-%j.out"
+#SBATCH --partition=trial
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=16
+#SBATCH --mem=16G
+#SBATCH --account=RFST
+#SBATCH --export=ALL
+#SBATCH -t 00:05:00
+
+for N in 1 2 4 8 16
+do
+	echo "Starting SAXPY with $N threads" 
+	for iRun in 1 2 3 4 5
+	do
+		echo "Run $iRun"
+		export OMP_NUM_THREADS=$N
+		./mandelLoop_omp.exe 20
+		wait
+		echo ""
+	done
+done
+
