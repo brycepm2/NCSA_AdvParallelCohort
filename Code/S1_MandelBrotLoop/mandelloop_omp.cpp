@@ -2,6 +2,7 @@
 #include <vector>
 #include <complex>
 #include <sys/time.h>
+#include "omp.h"
 
 #define ORD 1 << 27
 
@@ -13,7 +14,7 @@ typedef std::complex<float> cFloat;
 int mandelbrot(cFloat& c);
 
 int main() {
-  // instantiate vector of
+  // instantiate vector of complex numbers
   std::vector<cFloat> v;
   float a, b;
   srand(time(NULL));
@@ -32,21 +33,22 @@ int main() {
   // stopwatch variables
   struct timeval startTime, stopTime, elapsedTime;
 
-  // now call saxpy
   gettimeofday(&startTime, NULL);
-  std::vector<cFloat>::iterator vPos = v.begin();
-  std::vector<cFloat>::iterator vEnd = v.end();
-  for (; vPos != vEnd; vPos++) {
-    std::cout << "vPos = " << (*vPos) << std::endl;
-    // calculate setVal
-    const int iTs = mandelbrot(*vPos);
-    std::cout << "iTs = " << iTs << std::endl;
+  // note: must initialize iterator in loop
+  // or code segFaults
+  #pragma omp parallel
+  {
+    #pragma omp for
+    for (std::vector<cFloat>::iterator vPos = v.begin(); vPos != v.end(); ++vPos) {
+      // calculate setVal
+      const int iTs = mandelbrot(*vPos);
+    }
   }
 
   gettimeofday(&stopTime, NULL);
 
   timersub(&stopTime, &startTime, &elapsedTime);
-  cout << "Number of args: " << v.size() << "Elapsed time (s): "
+  cout << "Number of args: " << v.size() << " Elapsed time (s): "
        << elapsedTime.tv_sec + elapsedTime.tv_usec / 1000000.0 << endl;
 
   return 0;

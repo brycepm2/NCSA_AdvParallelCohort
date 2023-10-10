@@ -38,69 +38,16 @@ memory machines. It cannot handle communication on distributed memory systems.
  4. Plot your results
  5. Discuss the scalability of your parallelization. Is it far from ideal? Why?
 
- Ideas:
- - LaPack operation
- - derivative Appox?
- - Integral Approx?
- - Sorting array
+The code takes a vector of complex numbers and computes the number of
+iterations for the Mandelbrot set.
+\[
+f(z) = z^2 + c
+\]
+where $z$ and $c$ are complex numbers. $z$ is initialized to zero and
+the components of $c$ are randomly generated.
 
 Insert your serial code here
-BPMNote: compile command:
-#+begin_src shell
-  clang++ -o mandelbrotSerial mandelloop.cpp
-#+end_src
 #+begin_src cpp
-  #include <iostream>
-  #include <vector>
-  #include <complex>
-  #include <sys/time.h>
-
-  #define ord 1 << 3
-
-  typedef std::complex<float> cFloat;
-
-  int mandelbrot(const cFloat c) const; 
-
-  int main() {
-    // instantiate vector of 
-    std::vector<cFloat> v;
-    float a, b;
-    srand(time(NULL));
-    for (int iPos = 0; iPos < ORD; iPos++) {
-      // make 2 random doubles
-      a = rand() % RAND_MAX;
-      a = float(a) / (RAND_MAX);
-      b = rand() % RAND_MAX;
-      b = float(b) / (RAND_MAX);
-      // make our complex number
-      cFloat z (a, b);
-      // add it to the vector
-      v.push_back(z); 
-    }
-
-    std::vector<cFloat>::iterator vPos = v.begin();
-    std::vector<cFloat>::iterator vEnd = v.end();
-    for ( ; vPos != vEnd; vPos++) {
-      std::cout << "vPos = " << (*vPos) << std::endl;
-      // calculate setVal
-      const int iTs = mandelbrot( *vPos);
-      std::cout << "iTs = " << iTs << std::endl;
-    }
-    return 0;
-  }
-
-  int mandelbrot(const std::complex<float> c) {
-    std::complex<float> z = c;
-    for (unsigned int iMan = 0; iMan < 200; iMan++) {
-      if ( std::abs(z) > 2.0 ) {
-        // outside of magnitude bounds
-        return iMan;
-      }
-      // square z
-      z = z*z + c;
-    }
-    return iMan;
-  }
 
   #+end_src
 
