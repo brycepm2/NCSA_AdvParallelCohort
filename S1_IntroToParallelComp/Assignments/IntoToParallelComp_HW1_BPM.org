@@ -37,7 +37,7 @@ memory machines. It cannot handle communication on distributed memory systems.
  3. Repeat b) 3-6 times, take the averages, and calculate the speedup factor for each number of threads
  4. Plot your results
  5. Discuss the scalability of your parallelization. Is it far from ideal? Why?
-
+** Code
 The code takes a vector of complex numbers and computes the number of
 iterations for the Mandelbrot set.
 \[
@@ -52,21 +52,65 @@ Insert your serial code here
   #+end_src
 
 
-
-
-	
-
 Insert your parallelized code here
 #+begin_src cpp
 
 #+end_src
 
+** Results
+Run on a vector of 1048576 complex numbers.
+#+NAME: MandelLoop_OMP_RunTime
+| threads |    run1 |     run2 |     run3 |     run4 |    run5 |       avg |   speedup |
+|---------+---------+----------+----------+----------+---------+-----------+-----------|
+|       1 | 4.27445 |  4.30016 |  4.28323 |  4.26816 | 4.26952 |  4.279104 |        1. |
+|       2 | 2.14344 |  2.17865 |  2.15289 |   2.1612 | 2.14505 |  2.156246 | 1.9845157 |
+|       4 | 1.08021 |  1.08807 |  1.08875 |  1.09224 | 1.09027 |  1.087908 | 3.9333326 |
+|       8 | 0.57001 | 0.566089 | 0.564286 | 0.564507 | 0.56827 | 0.5666324 | 7.5518167 |
+|      16 | 0.31242 | 0.337258 | 0.361114 | 0.300969 | 0.32295 | 0.3269422 | 13.088258 |
+#+TBLFM: $7=vsum($2..$6)/5::$8=@2$7/$7
+#+begin_src gnuplot :var data=MandelLoop_OMP_RunTime :file MandelLoop_SpeedUp.png
+  set terminal pngcairo dashed
+  reset
+  set title "SpeedUp of MandelLoop Execution"
+
+  set style line 10 lc rgb "black" lt 1 
+  set style line 11 lc rgb "orange" lt 1 
+
+  set logscale xy 2
+
+  set xlabel "Threads"
+  set xrange [1:16]
+
+  set ylabel "Speedup = t1 / tN"
+  set yrange [1.0:16]
+
+  set grid
+  show grid
+
+  set key at 4, 8
+
+  plot data using 1:8 with linespoint title "Speedup Over 5 Runs" ls 11, \
+       [x=1:16] x with lines title "Ideal Scaling" ls 10
+#+end_src
+
+#+RESULTS:
+[[file:MandelLoop_SpeedUp.png]]
 
 
+The speedup of the program is pretty good. Even with 16 threads it is
+close to ideal. Although 8 is maybe a better ideal number of
+threads. This may scale even better with a larger vector, but when I
+tried the cluster booted me because it took too long with 1 thread.
 
-	
+I think it works well because the task is pretty intensive, sometimes
+taking 200 iterations for a single input. In serial we have to wait
+for the that to finish. In parallel we get to work while that happens.
 
-Add your plot here
+One reason it may not be ideal at higher thread counts is that I am
+not initializing the vector of complex variables in parallel. This
+takes time especially for a vector with over a million
+components. That time is effectively constant for all of the thread
+counts, and as the time for the Mandelbrot iteration calc goes down it
+becomes a more significant portion of the execute time.
 
 
-Discuss the results here
