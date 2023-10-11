@@ -1,0 +1,80 @@
+Starting SAXPY with 1 threads
+Run 1
+Number of args: 1048576 Elapsed time (s): 4.27445
+
+Run 2
+Number of args: 1048576 Elapsed time (s): 4.30016
+
+Run 3
+Number of args: 1048576 Elapsed time (s): 4.28323
+
+Run 4
+Number of args: 1048576 Elapsed time (s): 4.26816
+
+Run 5
+Number of args: 1048576 Elapsed time (s): 4.26952
+
+Starting SAXPY with 2 threads
+Run 1
+Number of args: 1048576 Elapsed time (s): 2.14344
+
+Run 2
+Number of args: 1048576 Elapsed time (s): 2.17865
+
+Run 3
+Number of args: 1048576 Elapsed time (s): 2.15289
+
+Run 4
+Number of args: 1048576 Elapsed time (s): 2.1612
+
+Run 5
+Number of args: 1048576 Elapsed time (s): 2.14505
+
+Starting SAXPY with 4 threads
+Run 1
+Number of args: 1048576 Elapsed time (s): 1.08021
+
+Run 2
+Number of args: 1048576 Elapsed time (s): 1.08807
+
+Run 3
+Number of args: 1048576 Elapsed time (s): 1.08875
+
+Run 4
+Number of args: 1048576 Elapsed time (s): 1.09224
+
+Run 5
+Number of args: 1048576 Elapsed time (s): 1.09027
+
+Starting SAXPY with 8 threads
+Run 1
+Number of args: 1048576 Elapsed time (s): 0.57001
+
+Run 2
+Number of args: 1048576 Elapsed time (s): 0.566089
+
+Run 3
+Number of args: 1048576 Elapsed time (s): 0.564286
+
+Run 4
+Number of args: 1048576 Elapsed time (s): 0.564507
+
+Run 5
+Number of args: 1048576 Elapsed time (s): 0.56827
+
+Starting SAXPY with 16 threads
+Run 1
+Number of args: 1048576 Elapsed time (s): 0.31242
+
+Run 2
+Number of args: 1048576 Elapsed time (s): 0.337258
+
+Run 3
+Number of args: 1048576 Elapsed time (s): 0.361114
+
+Run 4
+Number of args: 1048576 Elapsed time (s): 0.300969
+
+Run 5
+Number of args: 1048576 Elapsed time (s): 0.32295
+

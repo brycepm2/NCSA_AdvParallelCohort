@@ -4,8 +4,6 @@
 #include <sys/time.h>
 #include "omp.h"
 
-#define ORD 1 << 27
-
 using std::cout;
 using std::endl;
 
@@ -13,7 +11,11 @@ typedef std::complex<float> cFloat;
 
 int mandelbrot(cFloat& c);
 
-int main() {
+int main(int argc, char* argv[]) {
+  int ORD = 1 << 10;
+  if (argc != 1) {
+    ORD = 1 << std::stoi(argv[1]);
+  }	
   // instantiate vector of complex numbers
   std::vector<cFloat> v;
   float a, b;
@@ -39,7 +41,7 @@ int main() {
   #pragma omp parallel
   {
     #pragma omp for
-    for (std::vector<cFloat>::iterator vPos = v.begin(); vPos != v.end(); ++vPos) {
+    for (std::vector<cFloat>::iterator vPos = v.begin(); vPos < v.end(); ++vPos) {
       // calculate setVal
       const int iTs = mandelbrot(*vPos);
     }
