@@ -1,6 +1,7 @@
 ﻿#+TITLE: 1st Assignment - Intro to Parallel Computing
 #+AUTHOR: Bryce Mazurowski
 #+EMAIL: brycepm2@illinois.edu
+#+OPTIONS: toc:nil
 
 NCSA Advanced Parallel Computing Cohort
 Fall 2023
@@ -8,7 +9,7 @@ Fall 2023
 Due date: October 11, 2023
 
 
-* 1. Describe the two pure ways of parallelism (data and task). Which one of them has the most capability to speed up computationally intensive workloads?
+* Describe the two pure ways of parallelism (data and task). Which one of them has the most capability to speed up computationally intensive workloads?
 - Data Parallelism: When a single task is executed on a chunk of data
   that is split into pieces based on the number of threads available
   for the task
@@ -21,7 +22,7 @@ Due date: October 11, 2023
   task concurrently. Task parallelism is also more limited if one task
   depends on the operations in a different task.
 
-* 2. What do you perceive as the best advantage of OpenMP? What is its main limitation?
+* What do you perceive as the best advantage of OpenMP? What is its main limitation?
 The biggest advantage of OpenMP is its widespread availability. It can
 be used on any operating system with basically any compiler. The fact
 that it is simple to work with is a close second.
@@ -31,7 +32,7 @@ memory machines. It cannot handle communication on distributed memory systems.
 
 
 
-* 3. Write/find a simple serial program with a loop (ask ChatGPT if you can’t find one).
+* Write/find a simple serial program with a loop (ask ChatGPT if you can’t find one).
  1. Parallelize the loop using OpenMP directives
  2. Measure the time it takes to complete the loop with a different number of OpenMP threads (1 to 16 suggested)
  3. Repeat b) 3-6 times, take the averages, and calculate the speedup factor for each number of threads
@@ -46,15 +47,152 @@ f(z) = z^2 + c
 where $z$ and $c$ are complex numbers. $z$ is initialized to zero and
 the components of $c$ are randomly generated.
 
-Insert your serial code here
+*** Serial
 #+begin_src cpp
+#include <iostream>
+#include <vector>
+#include <complex>
+#include <sys/time.h>
 
-  #+end_src
+#define ORD 1 << 27
+
+using std::cout;
+using std::endl;
+
+typedef std::complex<float> cFloat;
+
+int mandelbrot(cFloat& c);
+
+int main() {
+  // instantiate vector of
+  std::vector<cFloat> v;
+  float a, b;
+  srand(time(NULL));
+  for (int iPos = 0; iPos < ORD; iPos++) {
+    // make 2 random doubles
+    a = rand() % RAND_MAX;
+    a = float(a) / (RAND_MAX);
+    b = rand() % RAND_MAX;
+    b = float(b) / (RAND_MAX);
+    // make our complex number
+    cFloat z(a, b);
+    // add it to the vector
+    v.push_back(z);
+  }
+
+  // stopwatch variables
+  struct timeval startTime, stopTime, elapsedTime;
+
+  // now call saxpy
+  gettimeofday(&startTime, NULL);
+  std::vector<cFloat>::iterator vPos = v.begin();
+  std::vector<cFloat>::iterator vEnd = v.end();
+  for (; vPos != vEnd; vPos++) {
+    std::cout << "vPos = " << (*vPos) << std::endl;
+    // calculate setVal
+    const int iTs = mandelbrot(*vPos);
+    std::cout << "iTs = " << iTs << std::endl;
+  }
+
+  gettimeofday(&stopTime, NULL);
+
+  timersub(&stopTime, &startTime, &elapsedTime);
+  cout << "Number of args: " << v.size() << "Elapsed time (s): "
+       << elapsedTime.tv_sec + elapsedTime.tv_usec / 1000000.0 << endl;
+
+  return 0;
+}
+
+int mandelbrot(cFloat &c) {
+  cFloat z(0.0, 0.0);
+  const unsigned int maxIt = 200;
+  for (unsigned int iMan = 0; iMan < maxIt; iMan++) {
+    if (std::abs(z) > 2.0) {
+      // outside of magnitude bounds
+      return iMan;
+    }
+    // square z
+    z = z * z + c;
+  }
+  return maxIt;
+}
+#+end_src
 
 
-Insert your parallelized code here
+*** Parallel
 #+begin_src cpp
+  #include <iostream>
+  #include <vector>
+  #include <complex>
+  #include <sys/time.h>
+  #include "omp.h"
 
+  using std::cout;
+  using std::endl;
+
+  typedef std::complex<float> cFloat;
+
+  int mandelbrot(cFloat& c);
+
+  int main(int argc, char* argv[]) {
+    int ORD = 1 << 10;
+    if (argc != 1) {
+      // ran with 1 << 20
+      ORD = 1 << std::stoi(argv[1]);
+    }	
+    // instantiate vector of complex numbers
+    std::vector<cFloat> v;
+    float a, b;
+    srand(time(NULL));
+    for (int iPos = 0; iPos < ORD; iPos++) {
+      // make 2 random doubles
+      a = rand() % RAND_MAX;
+      a = float(a) / (RAND_MAX);
+      b = rand() % RAND_MAX;
+      b = float(b) / (RAND_MAX);
+      // make our complex number
+      cFloat z(a, b);
+      // add it to the vector
+      v.push_back(z);
+    }
+
+    // stopwatch variables
+    struct timeval startTime, stopTime, elapsedTime;
+
+    gettimeofday(&startTime, NULL);
+    // note: must initialize iterator in loop
+    // or code segFaults
+    #pragma omp parallel
+    {
+      #pragma omp for
+      for (std::vector<cFloat>::iterator vPos = v.begin(); vPos < v.end(); ++vPos) {
+        // calculate setVal
+        const int iTs = mandelbrot(*vPos);
+      }
+    }
+
+    gettimeofday(&stopTime, NULL);
+
+    timersub(&stopTime, &startTime, &elapsedTime);
+    cout << "Number of args: " << v.size() << " Elapsed time (s): "
+         << elapsedTime.tv_sec + elapsedTime.tv_usec / 1000000.0 << endl;
+
+    return 0;
+  }
+
+  int mandelbrot(cFloat &c) {
+    cFloat z(0.0, 0.0);
+    const unsigned int maxIt = 200;
+    for (unsigned int iMan = 0; iMan < maxIt; iMan++) {
+      if (std::abs(z) > 2.0) {
+        // outside of magnitude bounds
+        return iMan;
+      }
+      // square z
+      z = z * z + c;
+    }
+    return maxIt;
+  }
 #+end_src
 
 ** Results
