@@ -1,5 +1,5 @@
 # C++ GCC compiler
-CC=g++
+CC=clang++-mp-16
 
 # compilation flags (none)
 LDFLAGS=-fopenmp

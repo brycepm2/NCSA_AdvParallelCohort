@@ -98,6 +98,7 @@ int main() {
   cout << "Total time (s): " << (eTime - sTime) << endl;
 
   // loop over map and print each point
+  // and delete created pointers
   stateVMap::iterator iter_svMap = svMap.begin();
   cout << "map length: " << svMap.size()
        << " correct is " << loopEnd << endl;
@@ -108,6 +109,7 @@ int main() {
            << " structLength: " << iter_svMap->second->getNumPts()
            << endl;
     } 
+    delete iter_svMap->second;
   }
 
   return 0;
