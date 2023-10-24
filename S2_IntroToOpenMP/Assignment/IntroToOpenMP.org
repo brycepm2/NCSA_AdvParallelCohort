@@ -67,20 +67,21 @@ one thread will try to insert in the map when another is resorting it
 on insert. This is a tricky bug that a reduction clause should fix.
 
 Insert your serial code here
+#+begin_src cpp 
 
-
-
-
-	
+#+end_src
 
 Insert your parallelized code without explicit data contexts here
+#+begin_src cpp 
 
+#+end_src
 
+Insert your final parallelized code here (race condition resolved)
+#+begin_src cpp 
 
+#+end_src
 
-
-	
-
+Discuss your results here
 
 This code encounters 2 error categories:
 1) If the nested iterator ~iPt~ is not declared private, the code can
@@ -106,10 +107,6 @@ value from the last thread to finish, not the complete thing.
 pragma omp for lastprivate(svMap)
 Total time (s): 0.000140905
 map length: 2 correct is 16
-Key: 14
-structLength: 18 correct is : 18
-Key: 15
-structLength: 18 correct is : 18
 #+end_src
 What I need is a reduction clause that will merge all of the maps.
 #+begin_src cpp 
@@ -117,18 +114,6 @@ pragma omp for reduction(mapMerge:svMap)
 Total time (s): 0.0644159
 map length: 32768 correct is 32768
 #+end_src
-
-Insert your final parallelized code here (race condition resolved)
-
-
-
-
-
-	
-
-
-
-Discuss your results here
 
 This was quite interesting. Implementing the reduction clause for the
 map was a cool experience and this is a real problem I hit in
