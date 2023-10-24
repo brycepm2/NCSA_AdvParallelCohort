@@ -100,3 +100,6 @@ Processes do not scale ideally because of parallel overhead
 Creating and distributing workflows causes trouble
 NonUnifiedMemoryAccess: also slows things down. CPUs are farther from
 memory we operate on. 
+* OpenQs
+- How would parallelizing instantiation of vector help speedup
+- How to handle iterators in openMP for loop

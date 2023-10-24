@@ -1,0 +1,131 @@
+#+TITLE: Intro to Shared Memory Parallel Computing with OpenMP
+#+AUTHOR: Bryce Mazurowski
+#+EMAIL: brycepm2@gmail.com
+
+
+Notes from NCSA workshop on parallel computing
+* CampusCluster
+to login
+#+begin_src shell
+ssh -l brycepm2 cc-login1.campuscluster.illinois.edu
+#+end_src
+while on vpn
+
+* Notes
+** Review of ParallelComputing
+Computer operates like "Do *this* on /that/ and then"
+*this* is a task
+/that/ is data
+*** Task parallelism
+Multiple tasks executed concurrently on a dataset
+*** Data Parallelism
+One task on chunks of a dataset
+*** Memory
+- Distributed: each cpu has its own memory
+- Shared: all cpus share memory
+- DistShared: Combination of both
+*** Frameworks
+- OpenMP: shared memory parallel for cpu
+- MPI: Dist memory parallel for cpu
+- OpenACC: shared memory parallel for gpu
+  - Interesting note about parallel for gpu: still need to get memory
+    from cpu to gpu on a given node this is a bottleneck
+  - Will be an OpenACC class at some point
+
+** OpenMP QuickIntro
+A bunch of compiler directives, library routines, and environment
+variables that fix application runtime behavior
+
+OpenMP creates a team of threads, delegates tasks to each in the
+parallel region, then destroys the team of threads once it is all done
+
+Compile by adding ~-fopenmp~ flag to command and including omp.h in
+source
+
+Need to set environment variable ~OMP_NUM_THREADS=N~ to tell openMP for
+many threads are needed.
+
+Performance is measured via $speedup = \frac{t_1}{t_N}$
+
+OpenMP has function ~omp_get_wtime()~ to get times, which can be used to
+check speedUp
+
+Scaling saturates, as in more threads do not really help speedUp
+
+** Exercises
+to start job on cluster
+~sbatch yourJob.jobscript~
+to check your jobs
+~squeue -u $USER~
+to queue all trial nodes
+~squeue -p trial~
+Note: to see available modules
+~module avail~
+this can get a newer gcc, etc
+*** LoopSched
+Data parallelism, saxpy on a large vector
+\[
+y_i = \alpha x_i + y_i
+\]
+Basically using OpenMP for loops.
+
+OpenMP default is *static scheduling*, which will chop data into
+portions based on the end condition of the for loop and number of
+threads
+~#pragma omp for schedule(static)~
+Note: do not need to specify static
+- Good for equally distributed workload
+
+Can also do *dynamic scheduling*
+~#pragma omp for schedule(dynamic, R)~
+This will divide dataset into chunks of size R and allocate. Once a
+thread finishes it gets another chunk
+- Good when workload is
+note default $R = 1$
+
+Or *guided scheduling*
+~#pragma omp for schedule(guided, R)~
+This gives each thread a proportional piece of data set, but once one
+thread finishes, all remaining tasks to do get redivided. R sets the
+smallest chunk size that things are cut into
+- Good when workload increases with index
+note default $R = 1$
+
+*** DataSharingRules
+Race conditions! Threads can mess with eachother if data is not unique
+to a thread
+
+Every variable declared outside of parallel region goes into parallel
+region as a shared variable.
+
+~#pragma omp for~
+Will make individual copies of the variables within, think $i$ in a
+for loop
+
+If you have nested loops, the second level can make a race condition
+on its iterator
+
+To fix this, declare shared variables
+~#pragma omp for private(i,j)~
+Would make private versions of $i$ and $j$ for each thread
+
+Can also declare shared variables
+~#pragma omp parallel shared(r, s, N, w, z)~
+These are all shared between every thread
+
+There is also ~firstprivate()~ where threads all have individual copies
+but they are initialized with value coming into loop
+
+And ~lastprivate()~ where the last value coming from parallelRegion is
+taken as value after loop
+
+*** ReductionClauses
+This is if I am doing something like average where I want running
+totals. Can use critical regions
+~pragma omp critical~
+*Reduction Clauses*: Let each thread do their own thing and combine
+results at the end
+~#pragma omp parallel reduction(reductionType:var1)~
+~#pragma omp for reduction(reductionType:var1)~
+Variable that is reduced is always private.
+Can do sum, min, max, product, and much more
