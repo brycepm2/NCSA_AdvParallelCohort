@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <math.h>
 
 using std::cout;
 using std::endl;
@@ -58,10 +59,12 @@ int main() {
   }
 
   // loop over map and print each point
+  // ALSO delete pointers within
   stateVMap::iterator iter_svMap = svMap.begin();
   for (; iter_svMap != svMap.end(); ++iter_svMap) {
     cout << "Key: " << iter_svMap->first << endl;
     cout << "struct: " << (*iter_svMap->second) << endl;
+    delete iter_svMap->second;
   }
 }
 

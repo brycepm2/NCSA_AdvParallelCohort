@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <math.h>
 
 #include <omp.h>
 
@@ -75,7 +76,7 @@ initializer (omp_priv=omp_orig)
 
 int main() {
   // set loop limits
-  const int loopEnd = 1 << 15;
+  const int loopEnd = 1 << 20;
 
   // instantiate stateVarMap
   stateVMap svMap;
@@ -90,8 +91,6 @@ int main() {
       integrateLoop(iElem, p_elemStateVar);
       // insert data structure into map
       svMap.insert({iElem, p_elemStateVar});
-      // free up memory here
-      delete p_elemStateVar;
     }
   }
   double eTime = omp_get_wtime();
@@ -115,7 +114,7 @@ int main() {
 }
 
 
-void integrateLoop(const int iElem, stateVar* p_elemStateVar) {
+void integrateLoop(const int iElem, stateVar* elemStateVar) {
   // number of integration points
   const int nPts = 18;
   for (int iPt = 0; iPt < nPts; ++iPt) {
@@ -123,6 +122,6 @@ void integrateLoop(const int iElem, stateVar* p_elemStateVar) {
     // make value some function
     const double value = std::pow(x,3.0) + 5*x*x + 13;
     // add value to data structure
-    p_elemStateVar->vals.push_back(value);
+    elemStateVar->vals.push_back(value);
   }
 } 
