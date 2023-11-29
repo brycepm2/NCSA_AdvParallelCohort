@@ -1,0 +1,70 @@
+﻿#+TITLE: Intro to MPI
+#+AUTHOR: Bryce Mazurowski
+#+EMAIL: brycepm2@gmail.com
+#+OPTIONS: toc:nil
+
+NCSA Advanced Parallel Computing Cohort
+Fall 2023
+
+Due date: December 1, 2023
+
+* What is an MPI message and what are its main components? Describe each one of them.
+An MPI message is data passed between nodes on a distributed memory
+machine. Its main components are the envelope and the body.
+- Envelope: Contains the source of the information being sent, the
+  destination that the information is being sent to, the communicator
+  passing the information, and a tag for the information.
+- Body: Contains the buffer which is the data being sent, the data
+  type of the message, and the count or size of the message.
+
+
+
+* Describe the different between collective and point-to-point (P2P) communication. What are their advantages and disadvantages?
+Collective: Send information from one source to several associated
+targets. The advantage here is that information travels to all places
+at the same time and is shared between all of them and it is typically
+faster than P2P communication. Disadvantages are that information
+passing is more restrictive. They can also result in deadlocks.
+
+P2P: Send information from one source to one associated target. The
+advantages are the message passing is targeted to one source only where
+needed. The disadvantage is that information only goes from one point
+to another. They can also result in deadlocks.
+
+
+* Write/find a simple serial program that can easily scale in size.
+   1. Define your program’s domain. What are the main variables that could be decomposed to explore parallelism? 
+   2. Propose a domain decomposition, describing your goal: do you want to make the program run faster, or process more data? Include a figure if you like.
+   3. Based on your domain decomposition, implement your parallelization approach with MPI functions. You may need to use different types of communication.
+   4. Discuss your results  
+
+Insert your serial code here
+
+
+
+
+	
+
+Insert your MPI parallelized code here
+
+
+
+
+
+	
+
+Define your program domain here
+
+
+
+
+
+
+Propose your domain decomposition here
+
+
+
+
+
+
+Discuss your results here

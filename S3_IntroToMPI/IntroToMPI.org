@@ -1,0 +1,150 @@
+#+TITLE: Intro to Shared Memory Parallel Computing with OpenMP
+#+AUTHOR: Bryce Mazurowski
+#+EMAIL: brycepm2@gmail.com
+
+
+Notes from NCSA workshop on parallel computing
+* CampusCluster
+to login
+#+begin_src shell
+ssh -l brycepm2 cc-login1.campuscluster.illinois.edu
+#+end_src
+while on vpn
+
+* Notes
+** Parallel Computing Review
+Programs are "do *this* on *that*"
+this: task
+that: data
+Parallelism allows us to do some of these instructions at the same
+time
+- Task Parallelism: multiple tasks on single data
+- Data Parallelism: single task on multiple chunks of data
+
+Distributed memory systems: MPI's bread&Butter
+
+Code -> Program -> Process (in RAM) -> threads -> cpu (scheduler)
+
+MPI focuses on processes, not threads
+
+** MPIIntro
+Message Passing interface: standardize and portable message-passing
+framework designed to function on parallel computing architectures.
+- Library function/routines
+- Different implementations
+
+Standardizes message passing
+Widely portable
+Provides virtual topology, synchronization, communication
+functionality between set of processes
+
+Only works for C and FORTRAN, but can use with c++
+
+*** Pros
+- Robust, mature, widely portable
+- Fully scalable
+- Strong scaling and massive speedups
+- Present in every superComputing system and roadmap of exascale generation
+- Integration with variety of other accelerators
+*** Cons
+- Initial learning barrier is high
+- No incremental parallelism
+- May require reDesign
+- Local installation can be tricky
+- Library routines only in C or Fortran
+
+*** When to use
+- Portability accross platforms
+- large performance gain/strong scaling required
+*** Not to use
+- If loop level parallelism is needed
+- Can use preExisting numerical libraries
+*** How does it work?
+1) write MPI code
+2) compile with MPI compiler
+3) Use MPI executer that instantiates multiple processes at once in
+   RAM. MPI directives define how processes interact
+
+**** MPI messages
+- Envelope: destination address, return address, and information
+  needed to ensure correct delivery
+-  Body/Payload/Content: buffer (data), dataType (type of data in
+  message), count (size)
+
+**** Program structure
+1) Include mpi.h
+2) declare variables
+3) Init MPI environment
+4) Do computation (MPI calls)
+5) Close MPI communications
+
+**** MPI Library
+- Communication procedures
+- task and load distribution
+- reduction and more complex operations
+***** Syntax
+~MPI_~ is start to all commands
+~MPI_FunctionName( BODY, ENVELOPE)~
+~BODY~ : buffer (content), count, dataType
+~ENVELOPE~ : Source, destination, tag, communicator
+~Others~ : status, returns an error code
+
+#+begin_src cpp
+  int iErr = MPI_SEND(double* buff, int count, MPI_Datatype
+  dtype, int src, int tag, MPI_Comm comm, MPI_Status *status)
+#+end_src
+
+***** MPI Collectives
+- Simple to understand
+- Robust in execution
+- Enclose a lot of functionality
+- avoid deadlocks: when you are trying to receive a message that has
+  not been sent (hangs)
+
+One-to-all: One PE sends data to all others
+all-to-one: All PEs send data to one process
+
+~MPI_Bcast~: copies data from memory of root process to same memory
+locations for other processes within communicator 
+
+NOTE: MPI is making multiple copies of one process, so variables are
+shared between different cases
+
+~MPI_Reduce~: Collects data from each process and reduces it to a single
+value via a specified operation stores reduced result on root process
+
+NOTE: ~MPI_AllReduce~ all processes get reduced value instead of root
+process
+
+Functions you always see:
+~MPI_Init~ kick off MPI process
+~MPI_Finalize~ end MPI process
+~MPI_Comm_size~ number of processes running
+~MPI_Comm_rank~ return ID of process
+** Exercises
+*** HelloWorld
+MPI_INIT takes argc and argv as arguments. Basically CL args
+need to compile with mpicompiler
+need to run with mpiRunner
+
+*** LinearRegression
+$y = a x + b$
+find the best linear fit for a data set
+$y = min_{a,b} \frac{1}{N} \sum_{i=1}^{N} e_i^2$
+$e_i = (y_t - y_i)$
+$y_t = a_t x_i + b_t$
+
+**** Domain Decomposition
+- What will each process do
+  - calc MSE and keep track of best value
+- How is each process distributed
+  - 
+- How do I slice dataset so each process works on part
+  - Divide ~a~ and ~b~ int ~rank~ pieces and operate on each
+    - Could cut up ~a~ or ~b~ if I know it is square
+- Do I want code to run fast, or solve bigger problems
+
+Optimized for searching parameter set and performance
+*BUT* may not work if data set is huge and cannot fit on single node
+
+**** NOTE: Every send needs a receive, see linearRegression code
