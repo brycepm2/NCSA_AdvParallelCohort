@@ -38,33 +38,87 @@ to another. They can also result in deadlocks.
    3. Based on your domain decomposition, implement your parallelization approach with MPI functions. You may need to use different types of communication.
    4. Discuss your results  
 
-Insert your serial code here
+This program performs a linear solve using a gradient-based iterative
+solver. It is motivated by basic machine learning applications. We
+attempt to solve the linear system:
 
+\[
+\bm{A} \bm{x} = \bm{c}
+\]
 
+There are a million very capable linear solvers out there but this is
+an idea I wanted to try out.
 
+We initialize $$\bm{A}$$ and $$\bm{c}$$ as a bunch of random
+numbers and inputs to our function graph. $$\bm{x}$$ are the
+parameters we tune with gradient descent. Our loss function $$L$$ is
+taken to be the $$L_2$$ norm of the residual vector
+$$\bm{r} = \bm{b} - \bm{A} \tilde{\bm{x}}$$
 
-	
+\[
+L = \sqrt{\sum_{i=i}^{n_{comp}} r_i r_i}
+\]
 
-Insert your MPI parallelized code here
+The chain rule is used to back propagate the loss function to the
+parameters $$\bm{x}$$.
 
+\[
+\frac{\partial L}{\partial x_i} =
+\frac{\partial L}{\partial r_j} \frac{\partial r_j}{\partial x_i} =
+\frac{-1}{L} A_{ji} r_j
+\]
 
+Then gradient descent updates $$\tilde{\bm{x}}$$ as follows:
 
+\[
+\tilde{x_i} = \tilde{x_i} - lr * \frac{\partial L}{\partial x_i}
+\]
 
+*Insert your serial code here*
+#+begin_src cpp
 
-	
+#+end_src
 
-Define your program domain here
+*Insert your MPI parallelized code here*
+#+begin_src cpp
 
+#+end_src
 
+*Define your program domain here*
 
+The main variable to decompose is the $$n \times n$$ matrix
+$$\bm{A}$$. This could be a huge dense matrix that could cause memory
+trouble. If we can decompose this it may be possible to solve big
+problems on distributed memory machines. This also allows us to
+perform linear algebra operations on smaller portions of a matrix
+which can be a big time saver.
 
+*Propose your domain decomposition here*
 
+This turned out to be quite a learning experience. Initially I was
+hoping to cut the matrix up into small squares based on the global
+rank of the program. I settled on breaking up the matrix by clusters
+of rows depending on the global rank. This made all of the linear
+algebra straightforward. Extending to squares should be doable, but it
+would require quite a bit of work under the hood.
 
-Propose your domain decomposition here
+*Discuss your results here*
 
+Efficiency ended up being somewhat disappointing. At first, I thought
+I could do the gradient calculation on a rank-local matrix and vector
+and things were very fast and efficient, but they were not correct. I
+fixed this and efficiency plummeted. There is a chance that a more
+clever loss function could skyrocket the efficiency. Anyhow, the
+program does seem to be progressing toward the solution.
 
+There are a lot of MPI operations within that facilitate the
+work. Definitely learned a lot trying this out. I have gained further
+evidence that I should leave the linear solver implementations to the
+linear solver experts. 
 
-
-
-
-Discuss your results here
+| Threads |    Run1 |    Run2 |    Run3 |    Run4 |      Avg |   Speedup |
+|---------+---------+---------+---------+---------+----------+-----------|
+|       1 |  |  |  |  |  |        1. |
+|       2 |  |  |  |  |  | 1.7068845 |
+|       4 |  |  |  |  |  | 2.6507871 |
+#+TBLFM: $6=vsum($2..$5)/4::$7=@2$6/$6
