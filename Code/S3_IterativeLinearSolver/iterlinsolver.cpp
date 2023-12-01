@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <sys/time.h>
+#include <math.h>
 
 using std::cout;
 using std::endl;
